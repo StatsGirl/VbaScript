@@ -101,7 +101,7 @@ Sub RefillTable(Name2)
     NewReferencePoint = k - NewIndexMRN 'Value to index in MRN() when copying over info into eMRN table
     
     ReDim NewIndex(NewIndexMRN) 'equal to the length of the value in NewIndexMRN
-    If r.EOF = True Then
+    If r.EOF = False Then
     For Each j In NewIndex 'for each index in NewIndex array
     'Start interation at NewReferencePoint in MRN() NewIndexMRN times NewReferencePoint=NewReferencePoint+1
         If UBound(MRN) <> UBound(eMRN) Then 'UBound(eMRN) Then 'If the array dimensions are different this means we have new patient entries

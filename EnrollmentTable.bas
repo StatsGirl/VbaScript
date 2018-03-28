@@ -12,8 +12,8 @@ Dim NewEnr As New Enrollment
 Dim NewDBS As New Demographics
 Dim Name1 As String
 Dim Name2 As String
-Name1 = "Patients2"
-Name2 = "Enrollment2"
+Name1 = "Patients"
+Name2 = "Enrollment"
 NewDBS.SetDBS Name1, Name2 'Set new DBS
 
 NewEnr.ProMRN (Name1)

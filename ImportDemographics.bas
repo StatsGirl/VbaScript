@@ -16,7 +16,7 @@ Dim enterPath As String
 enterName1 = InputBox("What is the name of this protocol")
 enterPath = InputBox("Copy and Paste the path and file for this protocol")
 Name1 = enterName1 'Be sure to change name of protocol when loading
-Name2 = "Patients2" 'Change output location if necessary
+Name2 = "Patients" 'Change output location if necessary
 DoCmd.TransferSpreadsheet acImport, acSpreadsheetTypeExcel12, enterName1, enterPath, True 'Change directory of protocol and length of ranges in sheet before starting
 
 

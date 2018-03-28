@@ -198,6 +198,7 @@ Function GatherInfo(Name1, Name2) 'MRNs that are in from the records table are i
     Dim cc As Integer
     Dim bb As Integer
     Dim ii As Integer
+    Dim aaa As Integer
     Dim upward As Integer
     Dim objFLD As DAO.Field
     Dim Comments() As Variant
@@ -222,20 +223,22 @@ Function GatherInfo(Name1, Name2) 'MRNs that are in from the records table are i
 cc = 0
 dd = 0
 
-'Works as of : 11.6.2017 DO NOT TOUCH
+'Works as of : 1.26.2018 DO NOT TOUCH
 
     For y = 0 To EMRNL - 1
     q = 0
     a = 0
     r.MoveFirst
         While q < r.RecordCount
+        a = 0
             If r!MRN = Match(0, dd) Then
                 For a = 0 To upward
-                ReDim Preserve Instrument(0 To EMRNL - 1, 0 To 4, 0 To upward)
+                ReDim Preserve Instrument(0 To EMRNL - 1, 0 To 5, 0 To upward)
                 Instrument(cc, 0, b) = Match(1, dd) 'copy over enrollment number from enrollment table
                 Instrument(cc, 1, b) = comp(z)
                 x = 1
                 aa = 0
+                aaa = 0
                 i = 0
 
                 For Each objFLD In r.Fields
@@ -247,14 +250,17 @@ dd = 0
                             aa = aa + 1
                         Else
                         End If
+                        End If
                         If objFLD.Type = dbText Then 'find all comments in recordset
-                            If InStr(1, objFLD.Name, "Comments") = 1 Then
-                                Instrument(cc, 4, i) = objFLD.Value
-                                i = i + 1
+                            If InStr(1, objFLD.Name, "Comment") = 1 Then
+                                Instrument(cc, 4, aaa) = objFLD.Value
+                                aaa = aaa + 1
                             Else
+                                Instrument(cc, 5, aaa) = objFLD.Value
+                                aaa = aaa + 1
+                            End If
                         End If
-                        End If
-                    End If
+                    'End If
                 Next
 
                 b = b + 1
@@ -263,11 +269,11 @@ dd = 0
             Else
         End If
         r.MoveNext
-        
+        b = 0
         q = q + 1
         Wend
         dd = dd + 1
-        b = 0
+        'b = 0
         cc = cc + 1
         z = 0
 
@@ -283,6 +289,7 @@ Dim x As Integer
 Dim dd As Integer
 Dim cc As Integer
 Dim ii As Integer
+Dim iii As Integer
 Dim y As Integer
 Dim p As Integer
 Dim upward As Variant
@@ -299,7 +306,7 @@ cc = 0
 x = 0
 z = 0
 y = 0
-ii = 8
+ii = 0
 iii = 0
 a = 0
 p = 0
@@ -310,83 +317,158 @@ upward = InputBox("How many timepoints are on this protocol")
 'Check and see if instruments is empty at x index if not resume if yes exit function
 If n.EOF = True Then
         While dd <= MRNLen
-            For a = 0 To MRNLen
+            For a = 0 To MRNLen - 1
             If IsEmpty(Instrument(p, 0, 0)) = False Then
             n.AddNew
                 x = 0
                 While x < upward
+                        n.AddNew
                         n!Timepoint = Instrument(cc, 2, z)
                         n!Enrollment = Instrument(cc, 0, z)
                         n!Occurence = y
-                        n!Comment = Instrument(cc, 4, z)
+                       ' n!Comment = Instrument(cc, 4, z)
                         n!TPDate = Instrument(cc, 3, z)
                         n!Instrument = Instrument(cc, 1, ii)
-                            If Not IsNull(Instrument(cc, 3, ii)) And Instrument(cc, 3, iii) = 1 Then
-                                 n!InstruPres = 1
-                             Else: IsNull (Instrument(cc, 3, ii)) Or Instrument(cc, 3, iii) <> 1
-                                 n!InstruPres = 0
+                            If Not IsNull(Instrument(cc, 5, ii)) = True Then
+                                If CStr(Instrument(cc, 5, ii)) = "1" Then
+                                    n!InstruPres = 1
+                                    n!Comment = Instrument(cc, 4, z)
+                                 Else
+                                  n!InstruPres = Val(Instrument(cc, 5, ii))
+                                  n!Comment = Instrument(cc, 4, z)
+                                End If
+                             Else ': IsNull (Instrument(cc, 5, ii)) 'Instrument(cc, 3, ii) <> "1" 'Or Instrument(cc, 3, iii) <> 1
+                                 'n!InstruPres = Val(Instrument(cc, 5, ii))
                              End If
                             y = y + 1
                             z = z + 1
                             x = x + 1
-                            ii = i + 1
-                            iii = iii + 1
+                            'ii = ii + 1
+                            'iii = iii + 1
                         n.Update
                     Wend
                     z = 0
-                    ii = 8
-                    iii = 0
+                    'ii = 0
+                    'iii = 0
                     cc = cc + 1
                 Else
                  Exit Function
                 End If
                 p = p + 1
+                'ii = 0
             Next a
                 dd = dd + 1
+                p = 0
+                cc = 0
+                ii = ii + 1
+                iii = iii + 1
             Wend
     Else
     n.MoveFirst
-
-    While dd <= MRNLen
-        For a = 0 To MRNLen
-        If IsEmpty(Instrument(p, 0, 0)) = False Then
+End If
+'if protocol table is not empty and has records in it already
+If n.EOF = False Then
+        While dd <= MRNLen
+            For a = 0 To MRNLen - 1
+            If IsEmpty(Instrument(p, 0, 0)) = False Then
             n.AddNew
                 x = 0
-
                 While x < upward
                 n.AddNew
-                    n!Timepoint = Instrument(cc, 2, z)
-                    n!Enrollment = Instrument(cc, 0, z)
-                    n!Occurence = y
-                    n!Comment = Instrument(cc, 4, z)
-                    n!TPDate = Instrument(cc, 3, z)
-                    n!Instrument = Instrument(cc, 1, ii)
-                            If Not IsNull(Instrument(cc, 3, iii)) And Instrument(cc, 3, iii) = 1 Then
-                                 n!InstruPres = 1
-                             Else: IsNull (Instrument(cc, 3, iii)) Or Instrument(cc, 3, iii) <> 1
-                                 n!InstruPres = 0
+                        n!Timepoint = Instrument(cc, 2, z)
+                        n!Enrollment = Instrument(cc, 0, z)
+                        n!Occurence = y
+                       ' n!Comment = Instrument(cc, 4, z)
+                        n!TPDate = Instrument(cc, 3, z)
+                        n!Instrument = Instrument(cc, 1, ii)
+                            If Not IsNull(Instrument(cc, 5, ii)) = True Then
+                                If CStr(Instrument(cc, 5, ii)) = "1" Then
+                                    n!InstruPres = 1
+                                    n!Comment = Instrument(cc, 4, z)
+                                 Else
+                                  n!InstruPres = Val(Instrument(cc, 5, ii))
+                                  n!Comment = Instrument(cc, 4, z)
+                                End If
+                             Else ': IsNull (Instrument(cc, 5, ii)) 'Instrument(cc, 3, ii) <> "1" 'Or Instrument(cc, 3, iii) <> 1
+                                 'n!InstruPres = Val(Instrument(cc, 5, ii))
                              End If
                             y = y + 1
                             z = z + 1
                             x = x + 1
-                            ii = ii + 1
-                            iii = iii + 1
+                            'ii = ii + 1
+                            'iii = iii + 1
                         n.Update
                     Wend
                     z = 0
-                    ii = 8
-                    iii = 0
+                    'ii = 0
+                    'iii = 0
                     cc = cc + 1
-            Else
-                Exit Function
-            End If
-            p = p + 1
+                Else
+                 Exit Function
+                End If
+                p = p + 1
+                'ii = 0
             Next a
+                dd = dd + 1
+                p = 0
+                cc = 0
+                ii = ii + 1
+                iii = iii + 1
+            Wend
 
-        dd = dd + 1
-        
-    Wend
-End If
+    n.MoveFirst
+  End If
 
+
+'If n.EOF = False Then
+ '   While dd <= MRNLen
+  '      For a = 0 To MRNLen
+   '     If IsEmpty(Instrument(p, 0, 0)) = False Then
+    '        n.AddNew
+    '            x = 0
+
+'                While x < upward
+'                n.AddNew
+ '                   n!Timepoint = Instrument(cc, 2, z)
+  '                  n!Enrollment = Instrument(cc, 0, z)
+   '                 n!Occurence = y
+    '                n!Comment = Instrument(cc, 4, z)
+     '               n!TPDate = Instrument(cc, 3, z)
+      '              n!Instrument = Instrument(cc, 1, ii)
+       '                     If Not IsNull(Instrument(cc, 3, ii)) = "1" Then ' And Instrument(cc, 3, iii) = 1 Then
+        '                         n!InstruPres = 1
+         '                    Else: IsNull (Instrument(cc, 3, ii)) <> "1" 'Or Instrument(cc, 3, iii) <> 1
+          '                       n!InstruPres = 0
+           '                  End If
+            '                'If Not IsNull(Instrument(cc, 3, iii)) And Instrument(cc, 3, iii) = 1 Then
+             '               '     n!InstruPres = 1
+              '              ' Else: IsNull (Instrument(cc, 3, iii)) Or Instrument(cc, 3, iii) <> 1
+               '             '     n!InstruPres = 0
+                '            ' End If
+                 '           y = y + 1
+                  '          z = z + 1
+                   '         x = x + 1
+                    '        'ii = ii + 1
+                     '       'iii = iii + 1
+                      '  n.Update
+                    'Wend
+                    'z = 0
+                    'ii = 0
+                    'iii = 0
+                   ' cc = cc + 1
+           ' Else
+            '    Exit Function
+            'End If
+            'p = p + 1
+            'Next a
+            '    dd = dd + 1
+             '   p = 0
+             '   cc = 0
+              '  ii = ii + 1
+              '  iii = iii + 1
+            'Wend
+'End If
+   ' Else
+   'n.MoveFirst
 End Function
 

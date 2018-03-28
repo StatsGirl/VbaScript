@@ -18,7 +18,7 @@ Dim enterPath As String
 enterName1 = InputBox("What is the name of this protocol")
 enterPath = InputBox("Copy and Paste the path and file for this protocol")
 Name1 = enterName1 'Always the protocol you are trying to referencing
-Name2 = "Enrollment2" 'Always the enrollment table
+Name2 = "Enrollment" 'Always the enrollment table
 Name3 = "ProtocolRecords" 'Always the protocol records table
 DoCmd.TransferSpreadsheet acImport, acSpreadsheetTypeExcel12, enterName1, enterPath, True 'create access table for protocol excel spreadsheet
 
